@@ -4,6 +4,9 @@ import string
 from typing import *
 import config
 import mimetypes
+import os
+import cv2
+import numpy as np
 from framework import HTTPServer, HTTPRequest, HTTPResponse
 
 
@@ -17,6 +20,26 @@ def default_handler(server: HTTPServer, request: HTTPRequest, response: HTTPResp
 
 
 def task2_data_handler(server: HTTPServer, request: HTTPRequest, response: HTTPResponse):
+    tar = request.request_target
+    # print(tar.find('/data'))
+    data = tar.split('/')
+    # print(data)
+    if tar.find('/data') == 0:
+        list = os.listdir('./data')
+        if data[2] in list:
+            print('dl', data, list)
+            response.status_code, response.reason = 200, 'OK'
+            with open('.'+tar, 'rb') as file:
+                response.body = file.read()
+            if data[2].split('.')[1] == 'html':
+                response.add_header('Content-Type', 'text/html')
+            elif data[2].split('.')[1] == 'js':
+                response.add_header('Content-Type', '/javascript')
+            elif data[2].split('.')[1] == 'jpg':
+                response.add_header('Content-Type', 'image/jpeg')
+            response.add_header('Content-Length', len(response.body))
+        else:
+            response.status_code, response.reason = 404, 'Not Found'
     # TODO: Task 2: Serve static content based on request URL (20%)
     pass
 
@@ -78,7 +101,7 @@ def task5_session_getimage(server: HTTPServer, request: HTTPRequest, response: H
 
 
 # TODO: Change this to your student ID, otherwise you may lost all of your points
-YOUR_STUDENT_ID = 12010000
+YOUR_STUDENT_ID = 12013029
 
 http_server = HTTPServer(config.LISTEN_PORT)
 http_server.register_handler("/", default_handler)

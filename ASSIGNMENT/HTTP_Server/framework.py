@@ -43,6 +43,18 @@ class HTTPRequest:
 
         :return:
         """
+        data = self.socket.recv(2048).decode().split('\r\n')
+        data2 = data[0].split(' ')
+        self.method = data2[0]
+        self.request_target = data2[1]
+        self.http_version = data2[2]
+        print(data)
+        for i in range(1, len(data)):
+            if data[i] == '':
+                break
+            data3 = data[i].split(': ', 1)
+            self.headers.append(HTTPHeader(data3[0], data3[1]))
+        # self.headers.append(HTTPHeader())
         # TODO: Task1, read from socket and fill HTTPRequest object fields
 
         # Debug: print http request
@@ -52,6 +64,7 @@ class HTTPRequest:
         print()
 
     def read_message_body(self) -> bytes:
+        
         # TODO: Task 3: complete read_message_body here
         pass
 
@@ -80,6 +93,14 @@ class HTTPResponse:
         set status_line, and write status_line, headers and message body (if exists) into self.socket
         :return:
         """
+        status_line = self.http_version + ' ' + str(self.status_code) + ' ' + self.reason + '\r\n'
+        data = status_line.encode()
+        for h in self.headers:
+            data += f"{h.name}: {h.value}\r\n".encode()
+        data += '\r\n'.encode()
+        data += self.body
+        # print(data)
+        self.socket.send(data)
         # TODO: Task1, construct response from fields and write binary data to socket
         pass
 
@@ -122,9 +143,11 @@ class HTTPServer:
             response = HTTPResponse(client_socket)
             # To simplify the implementation of the HTTP server, we require clients not to reuse TCP connections
             response.add_header("Connection", "close")
+            print('host=', host, 'self.host=', self.host)
             if host == self.host:
                 path = request.request_target.split('?', maxsplit=1)[0]
                 route = self.__match_route__(path)
+                print('route=', route)
                 if route:
                     if request.method in route.allowed_methods:
                         route.handler(self, request, response)
