@@ -48,6 +48,8 @@ class HTTPRequest:
         self.method = data2[0]
         self.request_target = data2[1]
         self.http_version = data2[2]
+        self.buffer = data[-1]
+        self.body_length = len(self.buffer)
         print(data)
         for i in range(1, len(data)):
             if data[i] == '':
@@ -66,6 +68,10 @@ class HTTPRequest:
     def read_message_body(self) -> bytes:
         
         # TODO: Task 3: complete read_message_body here
+        if self.buffer != '':
+            return self.buffer
+        else:
+            return '{}'
         pass
 
     def get_header(self, key: str) -> Union[str, None]:
@@ -101,7 +107,6 @@ class HTTPResponse:
         data += self.body
         # print(data)
         self.socket.send(data)
-        # TODO: Task1, construct response from fields and write binary data to socket
         pass
 
     def add_header(self, name: str, value: str):
