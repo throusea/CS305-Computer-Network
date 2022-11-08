@@ -50,7 +50,7 @@ class HTTPRequest:
         self.http_version = data2[2]
         self.buffer = data[-1]
         self.body_length = len(self.buffer)
-        print(data)
+        # print(data)
         for i in range(1, len(data)):
             if data[i] == '':
                 break
@@ -148,11 +148,10 @@ class HTTPServer:
             response = HTTPResponse(client_socket)
             # To simplify the implementation of the HTTP server, we require clients not to reuse TCP connections
             response.add_header("Connection", "close")
-            print('host=', host, 'self.host=', self.host)
             if host == self.host:
                 path = request.request_target.split('?', maxsplit=1)[0]
                 route = self.__match_route__(path)
-                print('route=', route)
+                # print('route=', route)
                 if route:
                     if request.method in route.allowed_methods:
                         route.handler(self, request, response)

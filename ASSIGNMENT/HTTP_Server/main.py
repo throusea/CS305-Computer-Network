@@ -100,9 +100,13 @@ def task5_session_login(server: HTTPServer, request: HTTPRequest, response: HTTP
     # TODO: Task 5: Cookie, Step 1 Login Authorization
     obj = json.loads(request.read_message_body())
     if obj["username"] == 'admin' and obj['password'] == 'admin':
+        response.status_code, response.reason = 200, 'OK'
         session_key = random_string()
         while session_key in server.session:
             session_key = random_string()
+        server.session[session_key] = True
+        response.add_header('Set-Cookie', 'SESSION_KEY='+session_key)
+        # print('SESSION_KEY='+session_key)
         pass
     else:
         response.status_code, response.reason = 403, 'Forbidden'
@@ -110,6 +114,21 @@ def task5_session_login(server: HTTPServer, request: HTTPRequest, response: HTTP
 
 def task5_session_getimage(server: HTTPServer, request: HTTPRequest, response: HTTPResponse):
     # TODO: Task 5: Cookie, Step 2 Access Protected Resources
+    str = request.get_header('Cookie')
+    if str != None:
+        str = str.split('=')[1]
+        # print('str', str)
+        # print(server.session)
+        if server.session.get(str) != None:
+            response.status_code, response.reason = 200, 'OK'
+            with open('./data/test.jpg', 'rb') as file:
+                response.body = file.read()
+            response.add_header('Content-Type', 'image/jpeg')
+            response.add_header('Content-Length', len(response.body))
+        else:
+            response.status_code, response.reason = 403, 'Forbidden'
+    else:
+        response.status_code, response.reason = 403, 'Forbidden'
     pass
 
 
